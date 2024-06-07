@@ -8,6 +8,8 @@ packages = [{include = "moschitta_query"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+psycopg2-binary = "^2.9.9"
+mysql-connector-python = "^8.4.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"

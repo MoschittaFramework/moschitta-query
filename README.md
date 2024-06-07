@@ -82,6 +82,58 @@ print(query.to_sql())
 - `offset(start: int) -> Query`: Specifies the starting offset for the result set.
 - `to_sql() -> str`: Returns the constructed SQL query as a string.
 
+
+---
+
+## Connecting to a Database
+
+To connect to a database, initialize an instance of the `DatabaseConnection` class with the database URL and type. Supported database types are `'sqlite'`, `'postgresql'`, and `'mysql'`.
+
+```python
+from moschitta_query import DatabaseConnection
+
+# Connect to an SQLite database
+sqlite_url = 'sqlite:///example.db'
+with DatabaseConnection(sqlite_url, 'sqlite') as conn:
+    conn.execute_query('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT)')
+
+# Connect to a PostgreSQL database
+postgresql_url = 'postgresql://username:password@localhost:5432/mydatabase'
+with DatabaseConnection(postgresql_url, 'postgresql') as conn:
+    conn.execute_query('CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, name VARCHAR(50))')
+
+# Connect to a MySQL database
+mysql_url = 'mysql://username:password@localhost:3306/mydatabase'
+with DatabaseConnection(mysql_url, 'mysql') as conn:
+    conn.execute_query('CREATE TABLE IF NOT EXISTS users (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(50))')
+```
+
+### Executing Queries
+
+Once connected, you can execute SQL queries using the `execute_query`, `fetch_all`, and `fetch_one` methods of the `DatabaseConnection` class.
+
+```python
+# Insert data into the users table
+with DatabaseConnection(sqlite_url, 'sqlite') as conn:
+    conn.execute_query("INSERT INTO users (name) VALUES ('Alice')")
+    
+# Fetch all users from the table
+with DatabaseConnection(sqlite_url, 'sqlite') as conn:
+    users = conn.fetch_all("SELECT * FROM users")
+    print(users)
+```
+
+### Handling Connection Context
+
+The `DatabaseConnection` class is designed to be used within a context manager (`with` statement), ensuring that the connection is properly established and closed.
+
+```python
+# Connect to the database and execute queries within a context
+with DatabaseConnection(sqlite_url, 'sqlite') as conn:
+    # Execute queries or perform database operations
+    ...
+```
+
 ## Contributing
 
 Contributions to `moschitta-query` are welcome! You can contribute by opening issues for bugs or feature requests, submitting pull requests, or helping improve the documentation.
