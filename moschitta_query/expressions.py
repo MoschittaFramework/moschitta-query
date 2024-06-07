@@ -1,3 +1,5 @@
+# pylint: disable=too-few-public-methods
+
 """
 This module defines classes to represent SQL expressions, including
 columns, literals, and operations.
