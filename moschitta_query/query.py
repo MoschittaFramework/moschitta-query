@@ -1,76 +1,124 @@
-from typing import List, Union
+"""
+This module provides the Query class for building SQL queries using a fluent interface.
+"""
 
+from typing import List, Dict, Any
 
 class Query:
+    """
+    The Query class is used to build SQL queries using a fluent interface.
+    """
+    
     def __init__(self):
-        self._select: List[str] = []
-        self._from: str = ""
-        self._where: List[str] = []
-        self._join: List[str] = []
-        self._order_by: List[str] = []
-        self._group_by: List[str] = []
-        self._having: List[str] = []
-        self._limit: Union[int, None] = None
-        self._offset: Union[int, None] = None
+        self._select_columns: List[str] = []
+        self._from_table: str = ""
+        self._clauses: Dict[str, Any] = {
+            'where': [],
+            'join': [],
+            'order_by': [],
+            'group_by': [],
+            'having': [],
+        }
+        self._limit: Dict[str, int] = {
+            'count': None,
+            'offset': None,
+        }
 
-    def select(self, *columns: str) -> "Query":
-        self._select.extend(columns)
+    def select(self, *columns: str) -> 'Query':
+        """
+        Specifies the columns to select in the query.
+        """
+        self._select_columns.extend(columns)
         return self
 
-    def from_(self, table: str) -> "Query":
-        self._from = table
+    def from_(self, table: str) -> 'Query':
+        """
+        Specifies the table to select data from.
+        """
+        self._from_table = table
         return self
 
-    def where(self, *conditions: str) -> "Query":
-        self._where.extend(conditions)
+    def where(self, *conditions: str) -> 'Query':
+        """
+        Adds conditions to filter the result set.
+        """
+        self._clauses['where'].extend(conditions)
         return self
 
-    def join(self, table: str, on_clause: str) -> "Query":
-        self._join.append(f"JOIN {table} ON {on_clause}")
+    def join(self, table: str, on_clause: str) -> 'Query':
+        """
+        Performs an inner join with another table.
+        """
+        self._clauses['join'].append(f"JOIN {table} ON {on_clause}")
         return self
 
-    def left_join(self, table: str, on_clause: str) -> "Query":
-        self._join.append(f"LEFT JOIN {table} ON {on_clause}")
+    def left_join(self, table: str, on_clause: str) -> 'Query':
+        """
+        Performs a left outer join with another table.
+        """
+        self._clauses['join'].append(f"LEFT JOIN {table} ON {on_clause}")
         return self
 
-    def right_join(self, table: str, on_clause: str) -> "Query":
-        self._join.append(f"RIGHT JOIN {table} ON {on_clause}")
+    def right_join(self, table: str, on_clause: str) -> 'Query':
+        """
+        Performs a right outer join with another table.
+        """
+        self._clauses['join'].append(f"RIGHT JOIN {table} ON {on_clause}")
         return self
 
-    def order_by(self, *columns: str) -> "Query":
-        self._order_by.extend(columns)
+    def order_by(self, *columns: str) -> 'Query':
+        """
+        Specifies the columns to order the result set by.
+        """
+        self._clauses['order_by'].extend(columns)
         return self
 
-    def group_by(self, *columns: str) -> "Query":
-        self._group_by.extend(columns)
+    def group_by(self, *columns: str) -> 'Query':
+        """
+        Groups the result set by the specified columns.
+        """
+        self._clauses['group_by'].extend(columns)
         return self
 
-    def having(self, *conditions: str) -> "Query":
-        self._having.extend(conditions)
+    def having(self, *conditions: str) -> 'Query':
+        """
+        Adds conditions to filter the grouped result set.
+        """
+        self._clauses['having'].extend(conditions)
         return self
 
-    def limit(self, count: int) -> "Query":
-        self._limit = count
+    def limit(self, count: int) -> 'Query':
+        """
+        Limits the number of rows returned by the query.
+        """
+        self._limit['count'] = count
         return self
 
-    def offset(self, start: int) -> "Query":
-        self._offset = start
+    def offset(self, start: int) -> 'Query':
+        """
+        Specifies the starting offset for the result set.
+        """
+        self._limit['offset'] = start
         return self
 
     def to_sql(self) -> str:
-        query = f"SELECT {', '.join(self._select)} FROM {self._from}"
-        if self._where:
-            query += f" WHERE {' AND '.join(self._where)}"
-        if self._join:
-            query += " " + " ".join(self._join)
-        if self._group_by:
-            query += f" GROUP BY {', '.join(self._group_by)}"
-        if self._having:
-            query += f" HAVING {' AND '.join(self._having)}"
-        if self._order_by:
-            query += f" ORDER BY {', '.join(self._order_by)}"
-        if self._limit is not None:
-            query += f" LIMIT {self._limit}"
-        if self._offset is not None:
-            query += f" OFFSET {self._offset}"
+        """
+        Returns the constructed SQL query as a string.
+        """
+        query = f"SELECT {', '.join(self._select_columns)} FROM {self._from_table}"
+        if self._clauses['join']:
+            query += " " + " ".join(self._clauses['join'])
+        if self._clauses['where']:
+            query += " WHERE " + " AND ".join(self._clauses['where'])
+        if self._clauses['group_by']:
+            query += " GROUP BY " + ", ".join(self._clauses['group_by'])
+        if self._clauses['having']:
+            query += " HAVING " + " AND ".join(self._clauses['having'])
+        if self._clauses['order_by']:
+            query += " ORDER BY " + ", ".join(self._clauses['order_by'])
+        if self._limit['count'] is not None:
+            query += f" LIMIT {self._limit['count']}"
+        if self._limit['offset'] is not None:
+            query += f" OFFSET {self._limit['offset']}"
         return query
+
